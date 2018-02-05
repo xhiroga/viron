@@ -22,6 +22,11 @@ export default function() {
     this.columnSize = 'columnSpreadSmall';
     this.rowSize = 'rowSpreadSmall';
     break;
+  case 'calendar':
+    this.cardType = 'calendar';
+    this.columnSize = 'columnSpreadSmall';
+    this.rowSize = 'rowSpreadMedium';
+    break;
   default:
     break;
   }

@@ -1,4 +1,13 @@
 /**
+ * GET: /stats/calendar
+ */
+const calendar = (req, res) => {
+  res.json({
+    value: 'just for test.'
+  });
+};
+
+/**
  * GET: /stats/dau
  */
 const dau = (req, res) => {
@@ -19,6 +28,7 @@ const mau = (req, res) => {
 };
 
 module.exports = {
+  'stats#calendar': calendar,
   'stats#dau': dau,
   'stats#mau': mau,
 };

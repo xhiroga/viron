@@ -3,6 +3,7 @@ viron-components-page-card.ComponentsPage_Card(class="ComponentsPage_Card--{ col
 
 
   script.
+    import './calendar/index.tag';
     import './chart/index.tag';
     import './number/index.tag';
     import './table/index.tag';
