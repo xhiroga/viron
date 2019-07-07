@@ -13,11 +13,14 @@ html
     link(rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png")
     link(rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png")
     link(rel="icon" type="image/png" sizes="96x96" href="./img/favicon-96x96.png")
+    link(href="https://cdn.jsdelivr.net/npm/froala-editor@3.0.1/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css")
     link(rel="stylesheet" href=`./css/app.min.css?_=${version}`)
 
   body
     viron
     script(src=`./js/swagger-client.js?_=${version}`)
     script(src="https://pugjs.org/js/pug.js")
+    script(src="https://cdn.jsdelivr.net/npm/froala-editor@3.0.1/js/froala_editor.pkgd.min.js")
+
     <!-- main -->
     script(src=`./js/app.js?_=${version}`)

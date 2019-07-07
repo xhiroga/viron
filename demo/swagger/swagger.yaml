@@ -716,12 +716,6 @@ definitions:
         description: ユーザーブログID
         format: int64
         type: integer
-        x-autocomplete:
-          field: title
-          path: /viron_autocomplete
-          query:
-            model: user_blogs
-            value: id
     required:
     - user_blog_id
     type: object
@@ -755,12 +749,6 @@ definitions:
         description: ユーザーID
         format: int64
         type: integer
-        x-autocomplete:
-          field: name
-          path: /viron_autocomplete
-          query:
-            model: users
-            value: id
     required:
     - user_id
     type: object

@@ -16,6 +16,7 @@ module.exports = helper => {
         // ここに書いたドメインが利用可能
         'camobile.com',
         'gmail.com',
+        'cam-inc.co.jp'
       ],
     },
 

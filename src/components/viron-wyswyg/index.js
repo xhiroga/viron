@@ -1,126 +1,76 @@
 import throttle from 'mout/function/throttle';
 import ObjectAssign from 'object-assign';
-import TinyMCE from 'tinymce';
-import 'tinymce/plugins/code/plugin';
-import 'tinymce/plugins/fullscreen/plugin';
-import 'tinymce/plugins/hr/plugin';
-import 'tinymce/plugins/image/plugin';
-import 'tinymce/plugins/link/plugin';
-import 'tinymce/plugins/lists/plugin';
-import 'tinymce/plugins/paste/plugin';
-import 'tinymce/plugins/searchreplace/plugin';
-import 'tinymce/plugins/table/plugin';
-import 'tinymce/plugins/textcolor/plugin';
 import './explorer/index.tag';
-
-const url = new URL(window.location.href);
-const toolbarDesktop = [
-  'bold italic underline | forecolor backcolor | image explorer link unlink',
-  'formatselect fontsizeselect',
-  'alignleft aligncenter alignright alignjustify alignnone | bullist numlist | outdent indent blockquote'
-];
-const toolbarMobile = [
-  'bold italic underline forecolor backcolor',
-  'image explorer link unlink',
-  'alignleft aligncenter alignright alignjustify alignnone',
-  'bullist numlist | outdent indent blockquote'
-];
-const menuDesktop = {
-  edit: { title: 'Edit', items: 'undo redo | cut copy paste | selectall | searchreplace' },
-  insert: { title: 'Insert', items: 'image link | inserttable hr' },
-  format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat' },
-  tools: { title: 'Tools', items: 'code fullscreen' }
-};
-const menuMobile = {};
-const baseConfig = {
-  plugins: ['code', 'hr', 'lists', 'link', 'image', 'paste', 'searchreplace', 'fullscreen', 'table', 'textcolor'],
-  fontsize_formats: '8pt 10pt 11pt 12pt 14pt 18pt 24pt 36pt',
-  min_height: 300,
-  branding: false,
-  relative_urls: false,
-  remove_script_host: true,
-  document_base_url: `${url.origin}${url.pathname}tinymce`,
-  skin: 'lightgray',
-  skin_url: 'skins/lightgray',
-  theme: 'modern',
-  theme_url: 'themes/modern/theme.js',
-  body_class: 'Wyswyg__body'
-};
 
 export default function() {
   const store = this.riotx.get();
   const isMobile = store.getter('layout.isMobile');
 
+  // TODO: オプションしっかり調べること。
+  FroalaEditor.DefineIcon('openExplorer', {
+    NAME: 'plus', SVG_KEY: 'add'
+  });
+  FroalaEditor.RegisterCommand('openExplorer', {
+    title: 'Insert Media',
+    focus: true,
+    undo: true,
+    refreshAfterCallback: true,
+    callback: () => {
+      const explorerDef = this.opts.explorer;
+      store.action('drawers.add', 'viron-wyswyg-explorer', {
+        def: explorerDef,
+        onInsert: item => {
+          this.editor.html.insert(`<img src="${item.url}" width="100%" />`);
+        }
+      }, { isWide: true });
+    }
+  });
+
   this.editor = null;
-
-  const openExplorer = () => {
-    const explorerDef = this.opts.explorer;
-    store.action('drawers.add', 'viron-wyswyg-explorer', {
-      def: explorerDef,
-      onInsert: item => {
-        this.editor.execCommand('mceInsertContent', false, `<img src="${item.url}" width="100%" />`);
-      }
-    }, { isWide: true });
-  };
-
-  const customConfig = {
-    selector: `.Wyswyg__editor${this._riot_id}`,
-    init_instance_callback: editor => {
-      this.editor = editor;
-      !!this.opts.val && this.editor.setContent(this.opts.val);
-      this.editor.on('Change', this.handleEditorChange);
-      this.editor.on('NodeChange', this.handleEditorChange);
-      this.editor.on('focus', this.handleEditorFocus);
-      this.editor.on('blur', this.handleEditorBlur);
-    },
-    setup: editor => {
-      // explorer機能と連携。
-      if (!!this.opts.explorer) {
-        editor.addButton('explorer', {
-          icon: 'browse',
-          tooltip: 'Explorer',
-          onclick: () => {
-            editor.iframeElement.blur();
-            // blur完了を保証するため。
-            setTimeout(() => {
-              openExplorer();
-            }, 500);
-
-          }
-        });
+  this.options = {
+    // デフォのボタン群にカスタムボタンを加える。
+    // @see: https://www.froala.com/wysiwyg-editor/docs/options#toolbarButtons
+    toolbarButtons: {
+      'moreText': {
+        'buttons': ['openExplorer', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'fontFamily', 'fontSize', 'textColor', 'backgroundColor', 'inlineClass', 'inlineStyle', 'clearFormatting']
+      },
+      'moreParagraph': {
+        'buttons': ['alignLeft', 'alignCenter', 'formatOLSimple', 'alignRight', 'alignJustify', 'formatOL', 'formatUL', 'paragraphFormat', 'paragraphStyle', 'lineHeight', 'outdent', 'indent', 'quote']
+      },
+      'moreRich': {
+        'buttons': ['insertLink', 'insertImage', 'insertVideo', 'insertTable', 'emoticons', 'fontAwesome', 'specialCharacters', 'embedly', 'insertFile', 'insertHR']
+      },
+      'moreMisc': {
+        'buttons': ['undo', 'redo', 'fullscreen', 'print', 'getPDF', 'spellChecker', 'selectAll', 'html', 'help'],
+        'align': 'right',
+        'buttonsVisible': 2
       }
     },
-    menu: (() => {
-      if (isMobile) {
-        return menuMobile;
+    events: {
+      blur: () => {
+        this.handleEditorBlur();
+      },
+      focus: () => {
+        this.handleEditorFocus();
+      },
+      contentChanged: () => {
+        this.handleEditorChange();
       }
-      return menuDesktop;
-    })(),
-    toolbar: (() => {
-      if (isMobile) {
-        return toolbarMobile;
-      }
-      return toolbarDesktop;
-    })()
+    }
   };
 
   this.on('mount', () => {
     if (this.opts.ispreview) {
       return;
     }
-    TinyMCE.init(ObjectAssign({}, baseConfig, customConfig));
+    this.editor = new FroalaEditor(`.Wyswyg__editor${this._riot_id}`, this.options, () => {
+      !!this.opts.val && this.editor.html.set(this.opts.val);
+    });
   }).on('before-unmount', () => {
     if (this.opts.ispreview) {
       return;
     }
-    TinyMCE.remove(`.Wyswyg__editor${this._riot_id}`);
     if (!!this.editor) {
-      this.editor.off('Change', this.handleEditorChange);
-      this.editor.off('NodeChange', this.handleEditorChange);
-      this.editor.off('focus', this.handleEditorFocus);
-      this.editor.off('blur', this.handleEditorBlur);
-      // destroy時にエラーが発生する。TinyMCEの対応待ち。
-      // @see: https://github.com/tinymce/tinymce/issues/3765
       this.editor.destroy();
       this.editor = null;
     }
@@ -131,7 +81,7 @@ export default function() {
     if (!this.opts.onchange) {
       return;
     }
-    const html = this.editor.getContent();
+    const html = this.editor.html.get();
     this.opts.onchange(html);
   }, 500);
 
@@ -144,7 +94,7 @@ export default function() {
 
   this.handleEditorBlur = () => {
     if (!!this.opts.onchange) {
-      const html = this.editor.getContent();
+      const html = this.editor.html.get();
       this.opts.onchange(html);
     }
     if (!this.opts.onblur) {
