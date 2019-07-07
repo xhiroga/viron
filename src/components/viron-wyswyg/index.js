@@ -1,16 +1,14 @@
 import throttle from 'mout/function/throttle';
-import ObjectAssign from 'object-assign';
 import './explorer/index.tag';
 
 export default function() {
   const store = this.riotx.get();
-  const isMobile = store.getter('layout.isMobile');
 
   // TODO: オプションしっかり調べること。
-  FroalaEditor.DefineIcon('openExplorer', {
+  window.FroalaEditor.DefineIcon('openExplorer', {
     NAME: 'plus', SVG_KEY: 'add'
   });
-  FroalaEditor.RegisterCommand('openExplorer', {
+  window.FroalaEditor.RegisterCommand('openExplorer', {
     title: 'Insert Media',
     focus: true,
     undo: true,
@@ -63,7 +61,7 @@ export default function() {
     if (this.opts.ispreview) {
       return;
     }
-    this.editor = new FroalaEditor(`.Wyswyg__editor${this._riot_id}`, this.options, () => {
+    this.editor = new window.FroalaEditor(`.Wyswyg__editor${this._riot_id}`, this.options, () => {
       !!this.opts.val && this.editor.html.set(this.opts.val);
     });
   }).on('before-unmount', () => {
